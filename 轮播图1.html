@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>轮播图任务1</title>
+	<link rel="stylesheet" href="index.css">
+    <script>
+        window.onload=function() {
+        
+            var prev=document.getElementById("prev");//箭头控制（向前）
+            var next=document.getElementById("next");//（向后）
+            var list=document.getElementById("list");
+            var buttons=document.getElementById("buttons").getElementsByTagName("span");
+            var container=document.getElementById("container");
+            var index=1;//先让第一幅图的焦点亮起来buttons[0].className="on"
+            var timer;
+            var animated=false;//全局动画停止标记
+
+            //焦点跟随（下部按钮）
+            function shownButton(){
+                /*for循环的作用是当prev和next每click一次，
+                  就会清除一次前一个class为on的span元素*/
+                 for (var i = 0; i < buttons.length ; i++) {
+                    if( buttons[i].className == 'on'){
+                        buttons[i].className = '';
+                       /* prev和next每click一次，
+                        就会清除一次前一个class为on的span元素，
+                        所以没有必要再去循环下面的span*/
+                        break;
+                    }
+                    //  或者直接遍历清除  buttons[i].className=""；
+                }
+                buttons[index -1].className="on";//焦点跟随
+            }
+
+            //点击事件
+            function animate(offset){ 
+                var time = 300;
+                var inteval = 10;
+                var speed = offset/(time/inteval);
+                  animated=true;//运行动画，其他事件不能打扰
+                 var newLeft=parseInt(list.style.left) +offset;
+                 
+                function go(){
+                    if ( (speed > 0 && parseInt(list.style.left) < newLeft) || (speed < 0 && parseInt(list.style.left) > newLeft)) {
+                        list.style.left = parseInt(list.style.left) + speed + 'px';
+                        setTimeout(go, inteval);//递归
+                    }
+                    else 
+                    {
+                        
+                       animated=false;
+                     // list.style.left=newLeft+"px";
+                         if (newLeft >-600) {
+                     list.style.left=-3600+"px";
+                         };
+                        if (newLeft <-3600) {
+                     list.style.left=-600+"px";
+                      };
+                    }
+                }
+                go();
+            };
+               
+            prev.onclick=function(){
+                /*添加一个if判断index为1时，如果继续往前滚的话就让index返回第六个span
+                但是当快速点击arrow时会出现一种span点亮延迟的情况。
+                可以尝试把判断index是否大于1或小于6的情况放进
+                判断是否animated的if语句中，先判断能不能点击，再点亮。
+                */
+                if (!animated) {
+                if (index==1) {
+                    index=6;
+                }else {
+                   index -=1; 
+                }
+                
+                shownButton();
+                    animate(600);
+                }
+              
+               
+            };
+
+            next.onclick=function(){
+                
+                if (!animated) {
+                     if (index==6) {
+                    index=1;
+                }else {
+                   index +=1; 
+                }    
+                    shownButton();
+                    animate(-600);
+                }
+            };
+
+            //点击按钮跳转
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].onclick=function(){
+                    
+                    if (this.className=="on") {
+                        return;
+                    }
+                    var myIndex=parseInt(this.getAttribute("index"));//index不是a的固有属性，所以需要DOM调用
+                    var offset=-600*(myIndex-index);
+                     if (!animated) {
+                     animate(offset);
+                }
+                    index=myIndex;//更新index,为了下一次的轮播
+                     shownButton();
+                
+                }
+            }
+            
+            function play(){
+                timer=setInterval(function(){
+                    next.onclick();
+                },2000);
+            }
+            function stop(){
+                clearInterval(timer);
+            }
+           play();
+        container.onmouseover=stop;
+        container.onmouseout=play;
+        }
+    </script>
+</head>
+<body>
+	
+<div id="container">
+    <div id="list" style="left: -600px;">
+        <img src="6.jpg" alt="1"/>
+        <img src="1.jpg" alt="1"/>
+        <img src="2.jpg" alt="2"/>
+        <img src="3.jpg" alt="3"/>
+        <img src="4.jpg" alt="4"/>
+        <img src="5.jpg" alt="5"/>
+        <img src="6.jpg" alt="6"/>
+        <img src="1.jpg" alt="6"/>
+    </div>
+    <div id="buttons">
+        
+        <span index="1" class="on"></span>
+        <span index="2"></span>
+        <span index="3"></span>
+        <span index="4"></span>
+        <span index="5"></span>
+        <span index="6"></span>
+    </div>
+    <a href="javascript:;" id="prev" class="arrow">&lt;</a>
+    <a href="javascript:;" id="next" class="arrow">&gt;</a>
+</div>
+</body>
+</html>
